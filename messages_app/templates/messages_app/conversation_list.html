@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="chat-container">
+    <h1>Мои чаты</h1>
+    <div class="conversation-list-container">
+        <!-- Форма поиска -->
+        <form method="GET" action="{% url 'conversation_list' %}" class="search-form">
+            <input type="text" name="search" placeholder="Поиск пользователей или сообщений..." value="{{ search_query }}">
+            <button type="submit" class="button">Найти</button>
+        </form>
+    
+        <!-- Результаты поиска -->
+        {% if search_query %}
+            <h2>Результаты поиска</h2>
+            <div class="search-results">
+                <!-- Результаты по пользователям -->
+                {% if search_results.users %}
+                    <h3>Пользователи:</h3>
+                    <ul class="user-results">
+                        {% for user in search_results.users %}
+                            <li>
+                                <a href="{% url 'view_profile' user.username %}">{{ user.get_full_name|default:user.username }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>Пользователи не найдены.</p>
+                {% endif %}
+    
+                <!-- Результаты по сообщениям -->
+                {% if search_results.messages %}
+                    <h3>Сообщения:</h3>
+                    <ul class="message-results">
+                        {% for message in search_results.messages %}
+                            <li>
+                                <p>Сообщение: "{{ message.content }}"</p>
+                                <p>
+                                    В беседе с:
+                                    {% for participant in message.conversation.participants.all %}
+                                        {% if participant != request.user %}
+                                            <a href="{% url 'conversation_detail' message.conversation.id %}">
+                                                {{ participant.get_full_name|default:participant.username }}
+                                            </a>
+                                        {% endif %}
+                                    {% endfor %}
+                                </p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>Сообщения не найдены.</p>
+                {% endif %}
+            </div>
+        {% endif %}
+    
+        <!-- Список бесед -->
+        <div class="conversation-list">
+            <h2>Ваши беседы</h2>
+            <ul>
+                {% for item in conversations %}
+                    <li class="conversation-item">
+                        <a href="{% url 'conversation_detail' item.conversation.id %}">
+                            <div class="conversation-participant">
+                                {{ item.participant.get_full_name|default:item.participant.username }}
+                            </div>
+                            <div class="conversation-last-message">
+                                Последнее сообщение: {{ item.last_message }}
+                            </div>
+                            {% if item.unread_count > 0 %}
+                                <span class="unread-count">Непрочитанных: {{ item.unread_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    
+    
+{% endblock %}

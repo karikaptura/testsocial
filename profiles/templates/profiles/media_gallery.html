@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Галерея пользователя {{ user.get_full_name|default:user.username }}</h1>
+<div class="gallery-grid">
+    {% for post in posts %}
+        {% if post.image %}
+            <img src="{{ post.image.url }}" alt="Изображение поста" class="gallery-image">
+        {% endif %}
+    {% empty %}
+        <p>Нет изображений для отображения.</p>
+    {% endfor %}
+</div>
+{% endblock %}

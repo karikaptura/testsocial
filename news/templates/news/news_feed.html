@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% load static %} 
+
+{% block content %}
+<div class="news-feed-container">
+    <div class="create-post-container">
+        <a href="{% url 'create_post' %}" class="button create-post-button">Создать пост</a>
+    </div>
+    
+    <h1>Лента новостей</h1>
+
+    <div class="posts-grid">
+        {% for post in posts %}
+            <div class="post-card">
+                <div class="post-header">
+                    <strong>{{ post.author.username }}</strong>
+                    <span class="post-date">{{ post.created_at|date:"d M Y H:i" }}</span>
+                </div>
+                <p class="post-content">{{ post.content }}</p>
+
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" alt="Изображение" class="post-image">
+                {% endif %}
+
+                {% if post.video %}
+                    <video controls class="post-video">
+                        <source src="{{ post.video.url }}" type="video/mp4">
+                        Ваш браузер не поддерживает видео.
+                    </video>
+                {% endif %}
+
+                <div class="post-actions">
+                    <button class="like-button" data-post-id="{{ post.id }}">
+                        Лайк (<span class="likes-count">{{ post.likes.count }}</span>)
+                    </button>
+                    <span class="comments-count">{{ post.comments.count }} Комментариев</span>
+                </div>
+
+                <!-- Комментарии -->
+                <ul class="comments-list">
+                    {% for comment in post.comments.all %}
+                        <li>
+                            <strong>{{ comment.user.username }}</strong>: {{ comment.content }}
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <!-- Форма для добавления комментария -->
+                <form method="POST" action="{% url 'add_comment' post.id %}">
+                    {% csrf_token %}
+                    <textarea name="content" rows="2" placeholder="Добавить комментарий"></textarea>
+                    <button type="submit">Отправить</button>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

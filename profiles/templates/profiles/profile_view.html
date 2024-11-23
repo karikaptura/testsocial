@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+<div class="profile-container">
+    <!-- Верхняя часть профиля -->
+    <div class="profile-header">
+        <div class="profile-header-left">
+            <!-- Аватар -->
+            <img src="{% if profile.avatar %}{{ profile.avatar.url }}{% else %}/static/default-avatar.png{% endif %}" 
+                 alt="Аватар" class="profile-avatar" id="profile-avatar">
+
+            <!-- Модальное окно для аватара -->
+            <div id="avatar-modal" class="modal">
+                <span class="close">&times;</span>
+                <img class="modal-content" id="avatar-modal-img">
+            </div>
+
+            <div class="profile-info">
+                <h1>{{ profile.user.get_full_name|default:profile.user.username }}</h1>
+                <p>{{ profile.bio|default:"Описание отсутствует" }}</p>
+                <p><strong>Дата рождения:</strong> {{ profile.birth_date|date:"d M Y"|default:"Не указана" }}</p>
+                <p><strong>Местоположение:</strong> {{ profile.location|default:"Не указано" }}</p>
+                <p><strong>Интересы:</strong> {{ profile.interests|default:"Не указаны" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопки действий -->
+    <div class="profile-actions">
+        {% if request.user == profile.user %}
+            <!-- Кнопка редактирования профиля -->
+            <a href="{% url 'edit_profile' profile.user.username %}" class="button edit-profile-button">
+                Редактировать профиль
+            </a>
+        {% else %}
+            <!-- Кнопки для других пользователей -->
+            {% if is_friend %}
+                <button class="button disabled" disabled>Вы друзья</button>
+            {% elif sent_request %}
+                <button class="button disabled" disabled>Запрос отправлен</button>
+            {% else %}
+                <a href="{% url 'send_friend_request' profile.user.id %}" class="button add-friend-button">
+                    Добавить в друзья
+                </a>
+            {% endif %}
+            {% if conversation_id %}
+                <a href="{% url 'conversation_detail' conversation_id %}" class="button message-button">
+                    Написать сообщение
+                </a>
+            {% else %}
+                <a href="{% url 'start_conversation' profile.user.id %}" class="button message-button">
+                    Начать диалог
+                </a>
+            {% endif %}
+            {% if is_friend %}
+                <a href="{% url 'remove_friend' profile.user.id %}" class="button remove-friend-button">
+                    Удалить из друзей
+                </a>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <!-- Вкладки -->
+    <div class="tabs-container">
+        <div class="tabs">
+            <button class="tab-button active" data-tab="friends-tab">Друзья</button>
+            <button class="tab-button" data-tab="groups-tab">Группы</button>
+            <button class="tab-button" data-tab="music-tab">Музыка</button>
+            <button class="tab-button" data-tab="photos-tab">Фото</button>
+            <button class="tab-button" data-tab="videos-tab">Видео</button>
+        </div>
+
+        <!-- Содержимое вкладки "Друзья" -->
+        <div id="friends-tab" class="tab-content active">
+            <h2>Друзья ({{ profile.friends.count }})</h2>
+            <ul class="friends-list">
+                {% for friend in profile.friends.all %}
+                    <li class="friend-item">
+                        <a href="{% url 'view_profile' friend.user.username %}">
+                            <img src="{% if friend.avatar %}{{ friend.avatar.url }}{% else %}/static/default-avatar.png{% endif %}" 
+                                 alt="{{ friend.user.username }}" class="friend-avatar">
+                            <span>{{ friend.user.get_full_name|default:friend.user.username }}</span>
+                        </a>
+                    </li>
+                {% empty %}
+                    <p>У пользователя пока нет друзей.</p>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Содержимое вкладки "Группы" -->
+        <div id="groups-tab" class="tab-content">
+            <h2>Группы</h2>
+            <p>Скоро здесь появятся группы.</p>
+        </div>
+
+        <!-- Содержимое вкладки "Музыка" -->
+        <div id="music-tab" class="tab-content">
+            <h2>Музыка</h2>
+            <p>Скоро здесь появится музыка.</p>
+        </div>
+
+        <!-- Вкладка "Фото" -->
+        <div id="photos-tab" class="tab-content">
+            <h2>Фото</h2>
+            {% if request.user == profile.user %}
+                <!-- Кнопка для добавления фото -->
+                <form method="POST" enctype="multipart/form-data" action="{% url 'add_photo' %}" class="add-media-form">
+                    {% csrf_token %}
+                    <input type="file" name="photo" accept="image/*" required>
+                    <button type="submit" class="button">Добавить фото</button>
+                </form>
+            {% endif %}
+            {% if photos %}
+                <div class="photos-grid">
+                    {% for photo in photos %}
+                        <div class="photo-item">
+                            <img src="{{ photo.file.url }}" alt="Фото">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>Нет доступных фото.</p>
+            {% endif %}
+        </div>
+
+        <!-- Вкладка "Видео" -->
+        <div id="videos-tab" class="tab-content">
+            <h2>Видео</h2>
+            {% if request.user == profile.user %}
+                <!-- Кнопка для добавления видео -->
+                <form method="POST" enctype="multipart/form-data" action="{% url 'add_video' %}" class="add-media-form">
+                    {% csrf_token %}
+                    <input type="file" name="video" accept="video/*" required>
+                    <button type="submit" class="button">Добавить видео</button>
+                </form>
+            {% endif %}
+            {% if videos %}
+                <div class="videos-grid">
+                    {% for video in videos %}
+                        <div class="video-item">
+                            <video controls>
+                                <source src="{{ video.file.url }}" type="video/mp4">
+                                Ваш браузер не поддерживает видео.
+                            </video>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>Нет доступных видео.</p>
+            {% endif %}
+        </div>
+
+
+    {% if request.user == profile.user %}
+        <div class="create-post-form">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Поле ввода текста -->
+                <textarea name="content" placeholder="Что у вас нового?"></textarea>
+
+                <!-- Выпадающее меню для вложений -->
+                <div class="file-attachment-menu">
+                    <button type="button" class="attachment-button">
+                        📎 <!-- Символ скрепки -->
+                    </button>
+                    <div class="attachment-menu">
+                        <label for="image-input">Фото</label>
+                        <input type="file" id="image-input" name="image" accept="image/*">
+                        <label for="video-input">Видео</label>
+                        <input type="file" id="video-input" name="video" accept="video/*">
+                    </div>
+                </div>
+
+                <!-- Кнопка отправки -->
+                <button type="submit" class="button">Добавить пост</button>
+            </form>
+        </div>
+    {% endif %}
+
+    <!-- Посты -->
+    <div class="profile-posts">
+        <h2>Посты</h2>
+        <div class="posts-grid">
+            {% for post in profile.user.posts.all %}
+                <div class="post-card">
+                    <p>{{ post.content }}</p>
+                    {% if post.image %}
+                        <img src="{{ post.image.url }}" alt="Изображение" class="post-image">
+                    {% endif %}
+                    {% if post.video %}
+                        <video controls class="post-video">
+                            <source src="{{ post.video.url }}" type="video/mp4">
+                            Ваш браузер не поддерживает видео.
+                        </video>
+                    {% endif %}
+                    <p class="post-date">{{ post.created_at|date:"d M Y H:i" }}</p>
+
+                    {% if request.user == profile.user %}
+                        <a href="{% url 'delete_post' post.id %}" class="button delete-button" 
+                        onclick="return confirm('Вы уверены, что хотите удалить этот пост?');">
+                            Удалить
+                        </a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/profile.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const targetTab = this.getAttribute('data-tab');
+
+                // Убираем активные классы со всех кнопок и содержимого
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                // Добавляем активный класс к выбранной кнопке и вкладке
+                this.classList.add('active');
+                document.getElementById(targetTab).classList.add('active');
+            });
+        });
+    });
+</script>
+{% endblock %}

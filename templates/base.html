@@ -1,0 +1,72 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Социальная сеть</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body style="background-image: url('{% if request.user.is_authenticated and request.user.settings.background_image %}{{ request.user.settings.background_image.url }}{% else %}/static/default-background.jpg{% endif %}');">
+    
+    {% if request.user.is_authenticated %}
+        <!-- Кнопка для мобильного сайдбара -->
+        <button id="sidebar-toggle" class="sidebar-toggle">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+
+        <!-- Сайдбар -->
+        <div class="sidebar" id="sidebar">
+            <div class="profile-section">
+                {% if request.user.is_authenticated and request.user.profile.avatar %}
+                    <img src="{{ request.user.profile.avatar.url }}" alt="Аватар">
+                {% else %}
+                    <img src="/static/default-avatar.png" alt="Аватар">
+                {% endif %}
+                <h2>{{ request.user.get_full_name|default:user.username }}</h2>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{% url 'view_profile' username=request.user.username %}">Мой профиль</a></li>
+                    <li><a href="{% url 'news_feed' %}">Новости</a></li>
+                    <li>
+                        <a href="{% url 'conversation_list' %}">
+                            Сообщения 
+                            {% if total_unread > 0 %}
+                                <span class="notification">{{ total_unread }}</span>
+                            {% endif %}
+                        </a>
+                    </li>                                      
+                    <li><a href="{% url 'friends_list' %}">Друзья</a></li>
+                    <li><a href="{% url 'settings' %}">Настройки</a></li>
+                    <li><a href="{% url 'logout' %}">Выход</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Контент -->
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+    {% else %}
+        <div class="auth-section">
+            <h1>Добро пожаловать!</h1>
+            <p><a href="{% url 'login' %}">Войти</a> или <a href="{% url 'register' %}">Зарегистрироваться</a></p>
+        </div>
+    {% endif %}
+
+    <script src="{% static 'js/sidebar.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+/* Общий фон */
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #3498db, #8e44ad);
+}
+
+/* Анимированный фон */
+.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #3498db, #8e44ad);
+    animation: gradientAnimation 10s infinite alternate;
+    z-index: -1;
+}
+
+@keyframes gradientAnimation {
+    0% {
+        background: linear-gradient(135deg, #3498db, #8e44ad);
+    }
+    100% {
+        background: linear-gradient(135deg, #8e44ad, #3498db);
+    }
+}
+
+/* Логотип */
+.logo-container {
+    text-align: center;
+    animation: slideInLogo 1.5s ease-out forwards;
+    transform: translateY(-200%);
+}
+
+.logo {
+    font-size: 4em;
+    font-weight: bold;
+    color: #fff;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo-highlight {
+    color: #f39c12;
+    font-weight: bold;
+}
+
+@keyframes slideInLogo {
+    0% {
+        transform: translateY(-200%); /* Логотип начинается выше экрана */
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0); /* Логотип заканчивает в центре */
+        opacity: 1;
+    }
+}
+
+/* Основной контент */
+.welcome-wrapper {
+    text-align: center;
+    animation: fadeInContent 2s ease-out forwards;
+    opacity: 0;
+    transform: translateY(200%); /* Контент начинается ниже экрана */
+}
+
+.welcome-container {
+    max-width: 500px;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.welcome-container h2 {
+    margin-bottom: 20px;
+    font-size: 2.5em;
+    color: white;
+}
+
+.welcome-container p {
+    margin-bottom: 20px;
+    font-size: 1.2em;
+    color: #ddd;
+}
+
+@keyframes fadeInContent {
+    0% {
+        transform: translateY(200%); /* Контент начинается ниже экрана */
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0); /* Контент заканчивает в центре */
+        opacity: 1;
+    }
+}
+
+/* Кнопки */
+.welcome-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.welcome-buttons .button {
+    padding: 10px 25px;
+    background: #f39c12;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 1em;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.welcome-buttons .button:hover {
+    transform: translateY(-5px);
+    background: #e67e22;
+}

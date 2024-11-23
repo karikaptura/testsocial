@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Создать пост</h1>
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.content }}
+
+    <!-- Кнопка со скрепкой -->
+    <div class="file-attachment-menu">
+        <button type="button" class="attachment-button">
+            📎 <!-- Символ скрепки -->
+        </button>
+        <div class="attachment-menu">
+            <label for="image-input">Фото</label>
+            <input type="file" id="image-input" name="image" accept="image/*">
+            <label for="video-input">Видео</label>
+            <input type="file" id="video-input" name="video" accept="video/*">
+        </div>
+    </div>
+
+    <button type="submit" class="button">Добавить пост</button>
+</form>
+
+{% endblock %}

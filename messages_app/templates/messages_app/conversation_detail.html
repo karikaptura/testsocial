@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+<div class="chat-container">
+    <h2>Диалог с {{ participant.username|default:"Неизвестный участник" }}</h2>
+    
+    <!-- Контейнер для сообщений -->
+    <div class="chat-messages" id="messages-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+                    <p>{{ message.content }}</p>
+                    <span class="message-time">{{ message.created_at|date:"H:i" }}</span>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-messages">Нет сообщений.</p>
+        {% endif %}
+    </div>
+    
+    <!-- Форма для отправки сообщений -->
+    <form id="message-form" class="message-form">
+        {% csrf_token %}
+        <textarea id="message-input" name="content" placeholder="Введите сообщение..." required></textarea>
+        <button type="button" id="send-button">Отправить</button>
+    </form>
+</div>
+
+
+<script src="{% static 'js/chat.js' %}"></script>
+
+<script>
+    // Передаем ID беседы и CSRF-токен в JavaScript
+    const conversationId = "{{ conversation.id }}";
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+</script>
+
+
+{% endblock %}

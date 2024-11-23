@@ -1,0 +1,13 @@
+<!-- templates/profiles/upload_media.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="upload-media-container">
+    <h1>Загрузить медиа</h1>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="button">Загрузить</button>
+    </form>
+</div>
+{% endblock %}

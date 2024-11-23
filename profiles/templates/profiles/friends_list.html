@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+<div class="friends-container">
+    <!-- Форма поиска -->
+    <form method="GET" action="{% url 'friends_list' %}" class="search-form">
+        <input type="text" name="search" placeholder="Поиск пользователей..." value="{{ request.GET.search }}">
+        <button type="submit">Найти</button>
+    </form>
+
+    <!-- Результаты поиска -->
+    {% if search_results %}
+        <h2>Результаты поиска</h2>
+        <div class="friends-grid">
+            {% for user in search_results %}
+                <div class="friend-card">
+                    <a href="{% url 'view_profile' user.username %}">
+                        <img src="{% if user.profile.avatar %}{{ user.profile.avatar.url }}{% else %}/static/default-avatar.png{% endif %}" 
+                             alt="{{ user.username }}" class="friend-avatar">
+                        <p class="friend-name">{{ user.get_full_name|default:user.username }}</p>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        {% if request.GET.search %}
+            <p>Нет пользователей, соответствующих вашему запросу.</p>
+        {% endif %}
+    {% endif %}
+
+    <!-- Вкладки -->
+    <div class="tabs">
+        <button class="tab-button active" data-tab="friends-tab">Ваши друзья</button>
+        <button class="tab-button" data-tab="incoming-tab">Входящие запросы</button>
+        <button class="tab-button" data-tab="outgoing-tab">Исходящие запросы</button>
+        <button class="tab-button" data-tab="global-search-tab">Глобальный поиск</button>
+    </div>
+
+    <!-- Содержимое вкладок -->
+    <div id="friends-tab" class="tab-content active">
+        <h2>Ваши друзья</h2>
+        <div class="friends-grid">
+            {% for friend in friends %}
+                <div class="friend-card">
+                    <a href="{% url 'view_profile' friend.user.username %}">
+                        <img src="{% if friend.avatar %}{{ friend.avatar.url }}{% else %}/static/default-avatar.png{% endif %}" 
+                             alt="{{ friend.user.username }}" class="friend-avatar">
+                        <p class="friend-name">{{ friend.user.username }}</p>
+                    </a>
+                </div>
+                <a href="{% url 'remove_friend' friend.user.id %}" 
+                   class="button delete-button" 
+                   onclick="return confirm('Вы уверены, что хотите удалить {{ friend.user.get_full_name|default:friend.user.username }} из друзей?');">
+                    Удалить из друзей
+                </a>
+            {% empty %}
+                <p>У вас пока нет друзей.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="incoming-tab" class="tab-content">
+        <h2>Входящие запросы</h2>
+        <div class="friend-requests">
+            {% for request in incoming_requests %}
+                <div class="request-card">
+                    <p>{{ request.sender.username }}</p>
+                    <a href="{% url 'respond_to_friend_request' request.id 'accept' %}" class="button accept-button">Принять</a>
+                    <a href="{% url 'respond_to_friend_request' request.id 'decline' %}" class="button decline-button">Отклонить</a>
+                </div>
+            {% empty %}
+                <p>Нет входящих запросов.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="outgoing-tab" class="tab-content">
+        <h2>Исходящие запросы</h2>
+        <div class="friend-requests">
+            {% for request in outgoing_requests %}
+                <div class="request-card">
+                    <p>{{ request.receiver.username }} (ожидает ответа)</p>
+                </div>
+            {% empty %}
+                <p>Нет исходящих запросов.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="global-search-tab" class="tab-content">
+        <h2>Все пользователи</h2>
+        <div class="user-list">
+            {% for user in all_users %}
+                <div class="user-row">
+                    <!-- Аватар пользователя -->
+                    <img src="{% if user.profile.avatar %}{{ user.profile.avatar.url }}{% else %}/static/default-avatar.png{% endif %}" 
+                         alt="{{ user.username }}" class="user-avatar">
+    
+                    <!-- Имя и фамилия пользователя -->
+                    <div class="user-info">
+                        <p class="user-name">{{ user.get_full_name|default:user.username }}</p>
+                    </div>
+    
+                    <!-- Кнопка добавления/удаления из друзей -->
+                    <div class="user-action">
+                        {% if user in friends %}
+                            <a href="{% url 'remove_friend' user.id %}" 
+                               class="button delete-button" 
+                               onclick="return confirm('Вы уверены, что хотите удалить {{ user.get_full_name|default:user.username }} из друзей?');">
+                                Удалить
+                            </a>
+                        {% else %}
+                            <a href="{% url 'send_friend_request' user.id %}" class="button add-button">Добавить в друзья</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Удаляем активный класс со всех кнопок и вкладок
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                // Добавляем активный класс к текущей кнопке и вкладке
+                const tabId = this.getAttribute('data-tab');
+                this.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+    });
+</script>
+{% endblock %}

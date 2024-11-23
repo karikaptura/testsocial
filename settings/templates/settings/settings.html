@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="settings-container">
+    <h1 class="settings-header">Настройки</h1>
+    <form method="POST" enctype="multipart/form-data" class="settings-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_color_scheme" class="form-label">Цветовая схема:</label>
+            {{ form.color_scheme }}
+        </div>
+
+        <div class="form-group">
+            <label for="id_background_image" class="form-label">Фоновое изображение:</label>
+            {{ form.background_image }}
+        </div>
+
+        <button type="submit" class="button save-button">Сохранить</button>
+    </form>
+
+    {% if settings.background_image %}
+        <div class="current-background">
+            <h2>Текущий фон:</h2>
+            <img src="{{ settings.background_image.url }}" alt="Фоновое изображение" class="background-preview">
+            <form method="POST" action="{% url 'remove_background' %}" class="remove-background-form">
+                {% csrf_token %}
+                <button type="submit" class="button remove-button">Удалить фон</button>
+            </form>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
